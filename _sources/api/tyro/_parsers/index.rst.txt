@@ -1,0 +1,212 @@
+:orphan:
+
+:py:mod:`tyro._parsers`
+=======================
+
+.. py:module:: tyro._parsers
+
+.. autoapi-nested-parse::
+
+   Interface for generating `argparse.ArgumentParser()` definitions from callables.
+
+
+
+Module Contents
+---------------
+
+.. py:data:: T
+
+   
+
+.. py:class:: LazyParserSpecification
+
+
+   Lazy wrapper that defers full ParserSpecification creation until needed.
+
+   Stores lightweight metadata (description) for fast help text generation,
+   while deferring expensive parser construction until actually needed.
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+   .. py:method:: evaluate() -> ParserSpecification
+
+      Get the full ParserSpecification, creating it if needed.
+
+
+
+.. py:class:: ArgWithContext
+
+
+   .. py:attribute:: arg
+      :type: tyro._arguments.ArgumentDefinition
+
+      
+
+   .. py:attribute:: source_parser
+      :type: ParserSpecification
+
+      ParserSpecification that directly contains this argument.
+
+   .. py:attribute:: local_root_parser
+      :type: ParserSpecification
+
+      Furthest ancestor of `source_parser` within the same (sub)command.
+
+
+.. py:class:: ParserSpecification
+
+
+   Each parser contains a list of arguments and optionally some subparsers.
+
+   .. py:attribute:: f
+      :type: Callable
+
+      
+
+   .. py:attribute:: markers
+      :type: Set[tyro.conf._markers._Marker]
+
+      
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+   .. py:attribute:: args
+      :type: List[tyro._arguments.ArgumentDefinition]
+
+      
+
+   .. py:attribute:: field_list
+      :type: List[tyro._fields.FieldDefinition]
+
+      
+
+   .. py:attribute:: child_from_prefix
+      :type: Dict[str, ParserSpecification]
+
+      
+
+   .. py:attribute:: helptext_from_intern_prefixed_field_name
+      :type: Dict[str, str | Callable[[], str | None] | None]
+
+      
+
+   .. py:attribute:: subparsers_from_intern_prefix
+      :type: Dict[str, SubparsersSpecification]
+
+      
+
+   .. py:attribute:: intern_prefix
+      :type: str
+
+      
+
+   .. py:attribute:: extern_prefix
+      :type: str
+
+      
+
+   .. py:attribute:: has_required_args
+      :type: bool
+
+      
+
+   .. py:attribute:: subparser_parent
+      :type: ParserSpecification | None
+
+      
+
+   .. py:attribute:: prog_suffix
+      :type: str
+
+      
+
+   .. py:method:: from_callable_or_type(f: Callable[Ellipsis, T], markers: Set[tyro.conf._markers.Marker], description: str | Callable[[], str | None] | None, parent_classes: Set[Type[Any]], default_instance: Union[T, tyro._singleton.PropagatingMissingType, tyro._singleton.NonpropagatingMissingType], intern_prefix: str, extern_prefix: str, subcommand_prefix: str, support_single_arg_types: bool, prog_suffix: str) -> ParserSpecification
+      :staticmethod:
+
+      Create a parser definition from a callable or type.
+
+
+   .. py:method:: get_args_including_children(local_root: ParserSpecification | None = None) -> list[ArgWithContext]
+
+      Get all arguments in this parser and its children.
+
+      Does not include arguments in subparsers.
+
+
+
+.. py:function:: handle_field(field: tyro._fields.FieldDefinition, parent_classes: Set[Type[Any]], intern_prefix: str, extern_prefix: str, subcommand_prefix: str, prog_suffix: str) -> Union[tyro._arguments.ArgumentDefinition, ParserSpecification, SubparsersSpecification]
+
+   Determine what to do with a single field definition.
+
+
+.. py:class:: SubparsersSpecification
+
+
+   Structure for defining subparsers. Each subparser is a parser with a name.
+
+   .. py:attribute:: description
+      :type: str | Callable[[], str | None] | None
+
+      
+
+   .. py:attribute:: parser_from_name
+      :type: Dict[str, LazyParserSpecification]
+
+      
+
+   .. py:attribute:: default_name
+      :type: str | None
+
+      
+
+   .. py:attribute:: default_parser
+      :type: ParserSpecification | None
+
+      
+
+   .. py:attribute:: intern_prefix
+      :type: str
+
+      
+
+   .. py:attribute:: extern_prefix
+      :type: str
+
+      
+
+   .. py:attribute:: required
+      :type: bool
+
+      
+
+   .. py:attribute:: default_instance
+      :type: Any
+
+      
+
+   .. py:attribute:: options
+      :type: Tuple[Union[tyro._typing.TypeForm[Any], Callable], Ellipsis]
+
+      
+
+   .. py:attribute:: prog_suffix
+      :type: str
+
+      
+
+   .. py:method:: from_field(field: tyro._fields.FieldDefinition, parent_classes: Set[Type[Any]], intern_prefix: str, extern_prefix: str, prog_suffix: str) -> SubparsersSpecification | ParserSpecification | None
+      :staticmethod:
+
+      From a field: return either a subparser specification, a parser
+      specification for subcommands when `tyro.conf.AvoidSubcommands` is used
+      and a default is set, or `None` if the field does not create a
+      subparser.
+
+
+

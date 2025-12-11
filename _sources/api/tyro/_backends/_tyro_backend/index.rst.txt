@@ -1,0 +1,87 @@
+:orphan:
+
+:py:mod:`tyro._backends._tyro_backend`
+======================================
+
+.. py:module:: tyro._backends._tyro_backend
+
+.. autoapi-nested-parse::
+
+   Custom backend for parsing command-line arguments directly from ParserSpecification.
+
+   This backend bypasses argparse entirely and parses arguments directly using the
+   ParserSpecification. This can be significantly faster for complex command structures
+   with many subcommands.
+
+
+
+Module Contents
+---------------
+
+.. py:class:: KwargMap
+
+
+   Look-up table for tracking keyword arguments. Due to aliases, each
+   argument can have multiple string representations, like -v and
+   --verbose.
+
+   .. py:method:: args() -> Iterable[tyro._arguments.ArgumentDefinition]
+
+
+   .. py:method:: contains(kwarg: str) -> bool
+
+
+   .. py:method:: get_kwarg(kwarg: str) -> tyro._arguments.ArgumentDefinition | None
+
+
+   .. py:method:: push(arg: tyro._arguments.ArgumentDefinition) -> None
+
+
+   .. py:method:: get_boolean_value(kwarg: str) -> bool | None
+
+
+   .. py:method:: pop(arg: tyro._arguments.ArgumentDefinition) -> tyro._arguments.ArgumentDefinition
+
+
+
+.. py:class:: TyroBackend
+
+
+   Bases: :py:obj:`tyro._backends._base.ParserBackend`
+
+   Backend that parses arguments directly from ParserSpecification.
+
+   This implementation avoids the overhead of constructing an argparse parser,
+   which can be significant for complex command structures with many subcommands.
+   It parses command-line arguments directly using the ParserSpecification tree.
+
+   .. py:method:: parse_args(parser_spec: tyro._parsers.ParserSpecification, args: Sequence[str], prog: str, return_unknown_args: bool, console_outputs: bool, add_help: bool, compact_help: bool = False) -> tuple[dict[str | None, Any], list[str] | None]
+
+      Parse command-line arguments directly from the specification.
+
+
+   .. py:method:: get_parser_for_completion(parser_spec: tyro._parsers.ParserSpecification, prog: str | None, add_help: bool) -> tyro._backends._argparse_formatter.TyroArgumentParser
+
+      Get an argparse parser for shell completion generation.
+
+      This method delegates to ArgparseBackend for backward compatibility
+      with code that expects an argparse parser object.
+
+
+   .. py:method:: generate_completion(parser_spec: tyro._parsers.ParserSpecification, prog: str, shell: Literal[bash, zsh, tcsh], root_prefix: str) -> str
+
+      Generate shell completion script directly from parser specification.
+
+      The TyroBackend provides native completion generation that supports
+      tyro-specific features like CascadeSubcommandArgs and frontier-based
+      subcommand parsing.
+
+      :param parser_spec: Specification for the parser structure.
+      :param prog: Program name.
+      :param shell: Shell type ('bash' or 'zsh').
+      :param root_prefix: Prefix for completion function names.
+
+      :returns: Shell completion script as a string.
+
+
+

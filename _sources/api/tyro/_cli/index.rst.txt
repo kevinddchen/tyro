@@ -1,0 +1,138 @@
+:orphan:
+
+:py:mod:`tyro._cli`
+===================
+
+.. py:module:: tyro._cli
+
+.. autoapi-nested-parse::
+
+   Core public API.
+
+
+
+Module Contents
+---------------
+
+.. py:data:: OutT
+
+   
+
+.. py:function:: cli(f: tyro._typing.TypeForm[OutT], *, prog: None | str = None, description: None | str = None, args: None | Sequence[str] = None, default: OutT | tyro._singleton.NonpropagatingMissingType | tyro._singleton.PropagatingMissingType = MISSING_NONPROP, return_unknown_args: Literal[False] = False, use_underscores: bool = False, console_outputs: bool = True, add_help: bool = True, compact_help: bool = False, config: None | Sequence[tyro.conf._markers.Marker] = None, registry: None | tyro.constructors.ConstructorRegistry = None) -> OutT
+                 cli(f: tyro._typing.TypeForm[OutT], *, prog: None | str = None, description: None | str = None, args: None | Sequence[str] = None, default: OutT | tyro._singleton.NonpropagatingMissingType | tyro._singleton.PropagatingMissingType = MISSING_NONPROP, return_unknown_args: Literal[True], use_underscores: bool = False, console_outputs: bool = True, add_help: bool = True, compact_help: bool = False, config: None | Sequence[tyro.conf._markers.Marker] = None, registry: None | tyro.constructors.ConstructorRegistry = None) -> tuple[OutT, list[str]]
+                 cli(f: Callable[Ellipsis, OutT], *, prog: None | str = None, description: None | str = None, args: None | Sequence[str] = None, default: tyro._singleton.NonpropagatingMissingType | tyro._singleton.PropagatingMissingType = MISSING_NONPROP, return_unknown_args: Literal[False] = False, use_underscores: bool = False, console_outputs: bool = True, add_help: bool = True, compact_help: bool = False, config: None | Sequence[tyro.conf._markers.Marker] = None, registry: None | tyro.constructors.ConstructorRegistry = None) -> OutT
+                 cli(f: Callable[Ellipsis, OutT], *, prog: None | str = None, description: None | str = None, args: None | Sequence[str] = None, default: tyro._singleton.NonpropagatingMissingType | tyro._singleton.PropagatingMissingType = MISSING_NONPROP, return_unknown_args: Literal[True], use_underscores: bool = False, console_outputs: bool = True, add_help: bool = True, compact_help: bool = False, config: None | Sequence[tyro.conf._markers.Marker] = None, registry: None | tyro.constructors.ConstructorRegistry = None) -> tuple[OutT, list[str]]
+
+   Generate a command-line interface from type annotations and populate the target with arguments.
+
+   :func:`cli()` is the core function of tyro. It takes a type-annotated function or class
+   and automatically generates a command-line interface to populate it from user arguments.
+
+   Two main usage patterns are supported:
+
+   1. With a function (CLI arguments become function parameters):
+
+      .. code-block:: python
+
+         import tyro
+
+         def main(a: str, b: str) -> None:
+             print(a, b)
+
+         if __name__ == "__main__":
+             tyro.cli(main)  # Parses CLI args, calls main() with them
+
+   2. With a class (CLI arguments become object attributes):
+
+      .. code-block:: python
+
+         from dataclasses import dataclass
+         from pathlib import Path
+
+         import tyro
+
+         @dataclass
+         class Config:
+             a: str
+             b: str
+
+         if __name__ == "__main__":
+             config = tyro.cli(Config)  # Parses CLI args, returns populated AppConfig
+             print(f"Config: {config}")
+
+   :param f: The function or type to populate from command-line arguments. This must have
+             type-annotated inputs for tyro to work correctly.
+   :param prog: The name of the program to display in the help text. If not specified, the
+                script filename is used. This mirrors the argument from
+                :py:class:`argparse.ArgumentParser()`.
+   :param description: The description text shown at the top of the help output. If not
+                       specified, the docstring of `f` is used. This mirrors the argument from
+                       :py:class:`argparse.ArgumentParser()`.
+   :param args: If provided, parse arguments from this sequence of strings instead of
+                the command line. This is useful for testing or programmatic usage. This mirrors
+                the argument from :py:meth:`argparse.ArgumentParser.parse_args()`.
+   :param default: An instance to use for default values. This is only supported if ``f`` is a
+                   type like a dataclass or dictionary, not if ``f`` is a general
+                   callable like a function. This is useful for merging CLI arguments
+                   with values loaded from elsewhere, such as a config file. The
+                   default value is :data:`tyro.MISSING_NONPROP`.
+   :param return_unknown_args: If True, returns a tuple of the output and a list of unknown
+                               arguments that weren't consumed by the parser. This mirrors the behavior of
+                               :py:meth:`argparse.ArgumentParser.parse_known_args()`.
+   :param use_underscores: If True, uses underscores as word delimiters in the help text
+                           instead of hyphens. This only affects the displayed help; both underscores and
+                           hyphens are treated equivalently during parsing. The default (False) follows the
+                           GNU style guide for command-line options.
+                           https://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+   :param console_outputs: If set to False, suppresses parsing errors and help messages.
+                           This is useful in distributed settings where tyro.cli() is called from multiple
+                           workers but console output is only desired from the main process.
+   :param add_help: Add a -h/--help option to the parser. This mirrors the argument from
+                    :py:class:`argparse.ArgumentParser()`.
+   :param compact_help: If True, use compact help format that omits full argument descriptions.
+                        This mode shows only ``--flag TYPE (default: value)`` instead of including
+                        the full docstring. When enabled, users can access full help with
+                        ``--help-verbose``. Only applies to the TyroBackend; ignored for ArgparseBackend.
+   :param config: A sequence of configuration marker objects from :mod:`tyro.conf`. This
+                  allows applying markers globally instead of annotating individual fields.
+                  For example: ``tyro.cli(Config, config=(tyro.conf.PositionalRequiredArgs,))``
+   :param registry: A :class:`tyro.constructors.ConstructorRegistry` instance containing custom
+                    constructor rules.
+
+   :returns: If ``f`` is a type (like a dataclass), returns an instance of that type populated
+             with values from the command line. If ``f`` is a function, calls the function with
+             arguments from the command line and returns its result. If ``return_unknown_args``
+             is True, returns a tuple of the result and a list of unused command-line arguments.
+
+
+.. py:function:: get_parser(f: tyro._typing.TypeForm[OutT], *, prog: None | str = None, description: None | str = None, default: OutT | tyro._singleton.NonpropagatingMissingType | tyro._singleton.PropagatingMissingType = MISSING_NONPROP, use_underscores: bool = False, console_outputs: bool = True, add_help: bool = True, config: None | Sequence[tyro.conf._markers.Marker] = None, registry: None | tyro.constructors.ConstructorRegistry = None) -> tyro._backends._argparse.ArgumentParser
+                 get_parser(f: Callable[Ellipsis, OutT], *, prog: None | str = None, description: None | str = None, default: OutT | tyro._singleton.NonpropagatingMissingType | tyro._singleton.PropagatingMissingType = MISSING_NONPROP, use_underscores: bool = False, console_outputs: bool = True, add_help: bool = True, config: None | Sequence[tyro.conf._markers.Marker] = None, registry: None | tyro.constructors.ConstructorRegistry = None) -> tyro._backends._argparse.ArgumentParser
+
+   Get an :py:class:`argparse.ArgumentParser` object that approximates the CLI generated
+   by :func:`tyro.cli`. Useful for tools like ``sphinx-argparse``, ``argcomplete``, etc.
+
+   .. deprecated:: 1.0.0
+
+       This function is deprecated and will be removed in a future version.
+
+   .. note::
+
+       The returned parser uses argparse-style subparsers, which is less flexible than
+       tyro's subcommand parser.
+
+   For tab completion, we recommend using :func:`tyro.cli`'s built-in
+   ``--tyro-write-completion`` flag.
+
+   :param f: The function or type to populate from command-line arguments.
+   :param prog: The name of the program to display in the help text.
+   :param description: The description text shown at the top of the help output.
+   :param default: An instance to use for default values.
+   :param use_underscores: If True, uses underscores as word delimiters in the help text.
+   :param console_outputs: If set to False, suppresses parsing errors and help messages.
+   :param add_help: Add a -h/--help option to the parser. This mirrors the argument from
+                    :py:class:`argparse.ArgumentParser()`.
+   :param config: A sequence of configuration marker objects from :mod:`tyro.conf`.
+   :param registry: A :class:`tyro.constructors.ConstructorRegistry` instance containing custom
+                    constructor rules.
+
+
